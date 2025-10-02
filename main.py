@@ -138,22 +138,34 @@ class DNSFailoverService:
         try:
             status = self.dns_failover.get_status()
             
-            print("\n" + "="*60)
-            print(f"DNS Failover Status - {status['timestamp']}")
-            print("="*60)
-            print(f"Активный сервер: {status['current_active_server']}")
-            print("\nСтатус серверов:")
+            # Формируем статус строки
+            status_lines = []
+            status_lines.append("="*60)
+            status_lines.append(f"DNS Failover Status - {status['timestamp']}")
+            status_lines.append("="*60)
+            status_lines.append(f"Активный сервер: {status['current_active_server']}")
+            status_lines.append("")
+            status_lines.append("Статус серверов:")
             
             for server_name, server_info in status['servers'].items():
                 status_icon = "✅" if server_info['healthy'] else "❌"
                 active_mark = " [АКТИВНЫЙ]" if server_name == status['current_active_server'] else ""
                 
-                print(f"  {status_icon} {server_name}{active_mark}")
-                print(f"     IP: {server_info['ip']}:{server_info['port']}")
-                print(f"     Приоритет: {server_info['priority']}")
-                print(f"     Ошибок подряд: {server_info['failure_count']}")
+                status_lines.append(f"  {status_icon} {server_name}{active_mark}")
+                status_lines.append(f"     IP: {server_info['ip']}:{server_info['port']}")
+                status_lines.append(f"     Приоритет: {server_info['priority']}")
+                status_lines.append(f"     Ошибок подряд: {server_info['failure_count']}")
             
-            print("="*60)
+            status_lines.append("="*60)
+            
+            # Выводим в консоль
+            # print("\n" + "\n".join(status_lines))
+            
+            # Записываем в лог файл
+            self.logger.info("СТАТУС СИСТЕМЫ:")
+            for line in status_lines:
+                if line.strip():  # Не записываем пустые строки в лог
+                    self.logger.info(line)
             
         except Exception as e:
             self.logger.error(f"Ошибка при выводе статуса: {e}")
@@ -180,12 +192,15 @@ class DNSFailoverService:
         
         # Настройка расписания
         check_interval = self.config['monitoring']['check_interval']
+        status_interval = self.config['monitoring'].get('status_interval', 5)  # По умолчанию 5 минут
+        
         schedule.every(check_interval).seconds.do(self.run_check)
         
-        # Расписание для вывода статуса каждые 5 минут
-        schedule.every(5).minutes.do(self.print_status)
+        # Расписание для вывода статуса
+        schedule.every(status_interval).minutes.do(self.print_status)
         
         self.logger.info(f"Сервис запущен. Интервал проверки: {check_interval} секунд")
+        self.logger.info(f"Статус системы будет выводиться в лог каждые {status_interval} минут")
         self.running = True
         
         # Основной цикл

@@ -35,6 +35,8 @@ monitoring:
   failure_threshold: 3
   # Метод проверки: "tcp" для проверки порта, "http" для HTTP запроса
   check_method: "tcp"
+  # Интервал вывода статуса в минутах
+  status_interval: 5
   # URL для HTTP проверки (если check_method = "http")
   # http_check_path: "/"
 
