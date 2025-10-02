@@ -1,0 +1,55 @@
+# Cloudflare DNS Failover Configuration
+
+# Cloudflare API настройки
+cloudflare:
+  # Ваш API токен от Cloudflare (создайте в разделе My Profile -> API Tokens)
+  api_token: "YOUR_CLOUDFLARE_API_TOKEN"
+  # ID зоны (можно найти в Overview вашего домена в Cloudflare)
+  zone_id: "YOUR_ZONE_ID"
+  # Имя домена для управления (например: example.com или subdomain.example.com)
+  domain_name: "YOUR_DOMAIN_NAME"
+
+# Настройки серверов для мониторинга
+servers:
+  primary:
+    # IP адрес основного сервера (первый провайдер)
+    ip: "192.168.1.100"
+    # Порт для проверки (обычно 80 для HTTP или 443 для HTTPS)
+    port: 80
+    # Приоритет (меньше = выше приоритет)
+    priority: 1
+  
+  secondary:
+    # IP адрес резервного сервера (второй провайдер)
+    ip: "192.168.1.101"
+    port: 80
+    priority: 2
+
+# Настройки мониторинга
+monitoring:
+  # Интервал проверки в секундах
+  check_interval: 60
+  # Тайм-аут для каждой проверки в секундах
+  timeout: 10
+  # Количество неудачных проверок перед переключением
+  failure_threshold: 3
+  # Метод проверки: "tcp" для проверки порта, "http" для HTTP запроса
+  check_method: "tcp"
+  # URL для HTTP проверки (если check_method = "http")
+  # http_check_path: "/"
+
+# Настройки DNS записи
+dns:
+  # Тип записи (A для IPv4, AAAA для IPv6)
+  record_type: "A"
+  # TTL для DNS записи (в секундах, минимум 60)
+  ttl: 300
+
+# Настройки логирования
+logging:
+  # Уровень логирования: DEBUG, INFO, WARNING, ERROR
+  level: "INFO"
+  # Путь к файлу логов
+  file: "dns_failover.log"
+  # Максимальный размер файла лога в МБ
+  max_size_mb: 10
